@@ -46,7 +46,7 @@ samples_tb <- samples_dir %>%
 
 samples_tb %>%
     dplyr::count(label)
-# label                              n
+    # label                              n
 # * <chr>                          <int>
 # 1 AFLORAMENTO ROCHOSO                1
 # 2 CAMPO ALAGADO E ÁREA PANTANOSA   213
@@ -61,6 +61,15 @@ samples_tb %>%
 # 11 OUTRA ÁREA NÃO VEGETADA            5
 # 12 PASTAGEM                         489
 # 13 RIO, LAGO E OCEANO                33
+
+my_label <- samples_tb %>%
+    dplyr::count(label) %>%
+    dplyr::filter(n > 100) %>%
+    dplyr::pull(label)
+samples_tb <- samples_tb %>%
+    dplyr::filter(label %in% my_label)
+samples_tb %>%
+    dplyr::count(label)
 
 ml_model <- sits::sits_train(samples_tb,
                              ml_method = ml_method)
