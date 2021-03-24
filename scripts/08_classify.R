@@ -2,13 +2,10 @@
 
 library(sits)
 library(dplyr)
-library(snow)
-
-setwd("/home/alber.ipia/Documents/bdc_pantanal")
 
 
 
-#---- set up level classification ----
+#---- Configuration ----
 
 ## Level model (this is for the BIOME)
 classification_name <- "first_classification"
@@ -24,13 +21,18 @@ parse_info    <- c("mission", "sp_resolution",
 out_dir <- paste0(project_dir, "/results/", classification_name)
 
 cube_names <- c("LC8_30_16D_STK-1_041051_2018-01-01_2018-12-31",
-                "LC8_30_16D_STK-1_041052_2018-01-01_2018-12-31")
+                 "LC8_30_16D_STK-1_041052_2018-01-01_2018-12-31")
 
 model_file    <- "/home/alber.ipia/Documents/bdc_pantanal/results/first_classification/ml_model.rds"
-ml_model <- readRDS(model_file)
 
 stopifnot(file.exists(model_file))
 stopifnot(dir.exists(out_dir))
+
+
+
+#---- Classify ----
+
+ml_model <- readRDS(model_file)
 
 for (cube_name in cube_names) {
     start_time <- Sys.time()
@@ -45,12 +47,11 @@ for (cube_name in cube_names) {
                                  delim = "_")
     probs <- sits::sits_classify(data_cube,
                                  ml_model = ml_model,
-                                 memsize = 8,
-                                 multicores = 1,
+                                 memsize = 6,
+                                 multicores = 10,
                                  output_dir = out_dir)
     probs <- dplyr::mutate(probs,
-                           processing =
-                               tibble::tibble(start_time = start_time,
-                                              end_time = Sys.time()))
-    saveRDS(probs, file = file.path(out_dir, paste(cube_name, "_results.rds")))
+                           processing = tibble::tibble(start_time = start_time,
+                                                       end_time = Sys.time()))
+    saveRDS(probs, file = file.path(out_dir, paste0(cube_name, "_results.rds")))
 }
