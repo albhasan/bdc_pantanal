@@ -42,7 +42,8 @@ samples_tb <- samples_dir %>%
     dplyr::mutate(data = purrr::map(file_path, readRDS)) %>%
     dplyr::pull(data) %>%
     dplyr::bind_rows() %>%
-    is_sits_valid()
+    is_sits_valid() %>%
+    dplyr::mutate(cube = "pantanal")
 
 samples_tb %>%
     dplyr::count(label)
