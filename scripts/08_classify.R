@@ -3,26 +3,6 @@
 library(sits)
 library(dplyr)
 
-#
-# Processing 1276 block(s)
-# System has not been booted with systemd as init system (PID 1). Can't operate.
-# Failed to create bus connection: Host is down
-# Starting classification at 2021-03-25 14:03:06
-#  Progress: ─────────                                                                                                   100%Error in unserialize(node$con) :
-#   Failed to retrieve the value of ClusterFuture (<none>) from cluster RichSOCKnode #2 (PID 420 on localhost ‘localhost’). The reason reported was ‘error reading from connection’. Post-mortem diagnostic: No process exists with this PID, i.e. the localhost worker is no longer alive.
-# Calls: sourceWithProgress ... resolved -> resolved.ClusterFuture -> receiveMessageFromWorker
-# In addition: Warning message:
-# In system("timedatectl", intern = TRUE) :
-#   running command 'timedatectl' had status 1
-# Execution halted
-
-# Using 160 blocks of size 46 x 11204
-# Progress: ────────────                                                                                         100%Error in unserialize(node$con) :
-#     Failed to retrieve the value of MultisessionFuture (<none>) from cluster RichSOCKnode #18 (PID 10718 on localhost ‘localhost’). The reason reported was ‘error reading from connection’. Post-mortem diagnostic: No process exists with this PID, i.e. the localhost worker is no longer alive.
-# Calls: sourceWithProgress ... resolved -> resolved.ClusterFuture -> receiveMessageFromWorker
-# Execution halted
-
-
 
 
 #---- Configuration ----
@@ -67,8 +47,8 @@ for (cube_name in cube_names) {
                                  delim = "_")
     probs <- sits::sits_classify(data_cube,
                                  ml_model = ml_model,
-                                 memsize = 4,
-                                 multicores = 5,
+                                 memsize = 8,
+                                 multicores = 20,
                                  output_dir = out_dir)
     probs <- dplyr::mutate(probs,
                            processing = tibble::tibble(start_time = start_time,
