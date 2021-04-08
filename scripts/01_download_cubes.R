@@ -5,7 +5,7 @@ library(readr)
 library(sits)
 library(tidyr)
 
-
+stop("Deprecated. Use BDC image services intead!")
 
 #---- Setup ----
 
