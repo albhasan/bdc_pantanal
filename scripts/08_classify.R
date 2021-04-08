@@ -1,4 +1,8 @@
 .libPaths("/home/alber.ipia/R/x86_64-pc-linux-gnu-library/4.0")
+source("~/Documents/bdc_access_key.R")
+
+Sys.setenv("__SITS_DEBUG__" = TRUE)
+Sys.setenv("__SITS_RESUME__" = TRUE)
 
 library(sits)
 library(dplyr)
@@ -7,23 +11,22 @@ library(dplyr)
 
 #---- Configuration ----
 
-## Level model (this is for the BIOME)
-classification_name <- "second_classification"
-my_bands            <- c("NDVI", "B1", "B2", "B3", "B4",
-                         "B5", "B6", "B7", "EVI", "FMASK")
+# Level model (this is for the BIOME)
+classification_name <- "third_classification"
+my_tiles            <- c("041051",
+                         "041052")
+
 
 ## Level data (for list of tiles in the BIOME)
+
 project_dir   <- "/home/alber.ipia/Documents/bdc_pantanal"
-parse_info    <- c("mission", "sp_resolution",
-                   "time_resolution", "type",
-                   "version", "tile", "date",
-                   "end_date", "band")
 out_dir <- paste0(project_dir, "/results/", classification_name)
-
-cube_names <- c("LC8_30_16D_STK-1_041051_2018-01-01_2018-12-31",
-                 "LC8_30_16D_STK-1_041052_2018-01-01_2018-12-31")
-
-model_file    <- "/home/alber.ipia/Documents/bdc_pantanal/results/second_classification/ml_model.rds"
+cube_name <- paste0("LC8_30_16D_STK-1_",
+                    paste(my_tiles, collapse = "-"),
+                    "_2018-01-01_2018-12-31")
+model_file    <- paste0("/home/alber.ipia/Documents/bdc_pantanal/results/",
+                        classification_name,
+                        "/ml_model.rds")
 
 stopifnot(file.exists(model_file))
 stopifnot(dir.exists(out_dir))
@@ -32,26 +35,19 @@ stopifnot(dir.exists(out_dir))
 
 #---- Classify ----
 
-ml_model <- readRDS(model_file)
-
-for (cube_name in cube_names) {
-    start_time <- Sys.time()
-    data_cube <- sits::sits_cube(source = "LOCAL",
-                                 name = cube_name,
-                                 satellite = "LANDSAT-8",
-                                 sensor = "OLI",
-                                 band = my_bands,
-                                 data_dir = file.path(project_dir, "data",
-                                                      "cube", cube_name),
-                                 parse_info = parse_info,
-                                 delim = "_")
-    probs <- sits::sits_classify(data_cube,
-                                 ml_model = ml_model,
-                                 memsize = 8,
-                                 multicores = 20,
-                                 output_dir = out_dir)
-    probs <- dplyr::mutate(probs,
-                           processing = tibble::tibble(start_time = start_time,
-                                                       end_time = Sys.time()))
-    saveRDS(probs, file = file.path(out_dir, paste0(cube_name, "_results.rds")))
-}
+data_cube <- sits::sits_cube(source = "BDC",
+                             name = cube_name,
+                             url = "http://datacube-005.dpi.inpe.br:8010/stac/",
+                             collection = "LC8_30_16D_STK-1",
+                             tiles = my_tiles,
+                             start_date = "2018-01-10",
+                             end_date   = "2018-12-31")
+probs <- sits::sits_classify(data_cube,
+                             ml_model = readRDS(model_file),
+                             memsize = 15,
+                             multicores = 10,
+                             output_dir = out_dir)
+probs <- dplyr::mutate(probs,
+                       processing = tibble::tibble(start_time = start_time,
+                                                   end_time = Sys.time()))
+saveRDS(probs, file = file.path(out_dir, paste0(cube_name, "_results.rds")))
