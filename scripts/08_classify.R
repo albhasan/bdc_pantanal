@@ -16,14 +16,10 @@ classification_name <- "third_classification"
 my_tiles            <- c("041051",
                          "041052")
 
-
 ## Level data (for list of tiles in the BIOME)
-
 project_dir   <- "/home/alber.ipia/Documents/bdc_pantanal"
 out_dir <- paste0(project_dir, "/results/", classification_name)
-cube_name <- paste0("LC8_30_16D_STK-1_",
-                    paste(my_tiles, collapse = "-"),
-                    "_2018-01-01_2018-12-31")
+cube_name <- paste0("pantanal_LC8_30_16D_STK-1")
 model_file    <- paste0("/home/alber.ipia/Documents/bdc_pantanal/results/",
                         classification_name,
                         "/ml_model.rds")
